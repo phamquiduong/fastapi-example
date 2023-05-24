@@ -1,0 +1,52 @@
+version: "3.8"
+services:
+  nginx:
+    container_name: ${COMPOSE_PROJECT_NAME}_nginx
+    build:
+      context: .
+      dockerfile: Dockerfile-nginx
+    ports:
+      - ${NGINX_PORT}:80
+    volumes:
+      - ./nginx/config:/etc/nginx
+      - ./nginx/logs/:/var/log/nginx/
+    command: /tmp/run_nginx.sh
+    env_file:
+      - ./.env
+    depends_on:
+      - pyserver
+    restart: always
+
+  pyserver:
+    container_name: ${COMPOSE_PROJECT_NAME}_pyserver
+    build:
+      context: ../
+      dockerfile: .docker/Dockerfile-py
+    expose:
+      - ${PYSERVER_PORT}
+    volumes:
+      - ..:/code
+    env_file:
+      - ./.env
+    depends_on:
+      - mysql
+    command: uvicorn main:app --host 0.0.0.0 --port ${PYSERVER_PORT} --reload
+    tty: true
+    restart: always
+
+  mysql:
+    container_name: ${COMPOSE_PROJECT_NAME}_mysql
+    platform: ${MYSQL_PLATFORM}
+    image: mysql
+    ports:
+      - ${MYSQL_PORT}:3306
+    volumes:
+      - ./mysql:/var/lib/mysql
+    env_file:
+      - ./.env
+    restart: always
+
+networks:
+  default:
+    external: true
+    name: ${COMPOSE_PROJECT_NAME}_network
