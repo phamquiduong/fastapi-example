@@ -1,2 +1,10 @@
 fastapi
 uvicorn[standard]
+
+# SQL support
+mysql-connector-python
+sqlalchemy
+Flask-Migrate
+
+# Dot environments
+python-dotenv
