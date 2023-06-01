@@ -1,0 +1,19 @@
+fastapi
+uvicorn[standard]
+
+# Dot environments
+python-dotenv
+
+# SQL support
+mysql-connector-python
+sqlalchemy
+
+# Email Validation
+pydantic[email]
+
+# Password support
+passlib[bcrypt]
+pyjwt
+
+# Form support
+python-multipart
