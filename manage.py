@@ -34,7 +34,7 @@ def runserver(host: str, port: int):
 
     _port = int(os.getenv('NGINX_PORT') or port)
     _port = f':{_port}' if _port != 80 else ''
-    print(f'\n* Server is running. Visit http://localhost{_port}/docs to view document *\n')
+    print(f'\n* Server is running. Visit http://localhost{_port}/docs to view document\n')
 
     uvicorn.run(
         'app:app',
