@@ -45,7 +45,6 @@ __LOGGING = {
     },
 }
 
-
 logging.config.dictConfig(__LOGGING)
 
 logger = logging.getLogger('log')
