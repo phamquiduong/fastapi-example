@@ -37,6 +37,8 @@ services:
 
   mysql:
     container_name: ${COMPOSE_PROJECT_NAME}_mysql
+    profiles:
+      - mysql
     platform: ${MYSQL_PLATFORM}
     image: mysql
     ports:
