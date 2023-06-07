@@ -55,6 +55,9 @@ And then create a virtual environment by command
         # Build again and run in background
         docker-compose up --build -d
 
+        # Note: If you running mysql database docker. Add profile to the command
+        docker-compose up --profile mysql --build -d
+
     # Stop docker
     docker-compose down
 ```
