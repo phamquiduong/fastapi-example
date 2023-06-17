@@ -167,3 +167,6 @@ cython_debug/
 
 # Sonarqube workspace
 .scannerwork
+
+# Mac OS ignore files
+.DS_Store
