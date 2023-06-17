@@ -1,5 +1,5 @@
-## FastAPI Source Code
-- Django source code customizations by me
+## FastAPI Source Code (Outdated Update later)
+- FastAPI source code customizations by me
 
 
 ## Developed by
