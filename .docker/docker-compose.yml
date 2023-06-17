@@ -11,6 +11,8 @@ services:
       - ./nginx/config:/etc/nginx
       - ./nginx/logs/:/var/log/nginx/
     command: /tmp/run_nginx.sh
+    environment:
+      - DOLLAR=$
     env_file:
       - ./.env
     depends_on:
@@ -30,8 +32,7 @@ services:
       - ./.env
     depends_on:
       - mysql
-    command: bash -c "python manage.py migrate &&
-                      python manage.py runserver 0.0.0.0 ${PYSERVER_PORT}"
+    command: bash -c "cd src && python main.py migrate && uvicorn main:app --host 0.0.0.0 --port ${PYSERVER_PORT} --reload"
     tty: true
     restart: always
 
