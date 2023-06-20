@@ -35,7 +35,7 @@ async def custom_form_validation_error(request, exc):
 
     for pydantic_error in exc.errors():
         loc, msg = pydantic_error["loc"], pydantic_error["msg"]
-        loc = loc[1:] if loc[0] in ("body", "query", "path") else loc
+        loc = loc[1:] if loc[0] in ("body", "query", "path") and len(loc) > 1 else loc
         for field in loc:
             request_validation_error.fields.append(FieldErrorSchema(name=field, detail=msg))
 
