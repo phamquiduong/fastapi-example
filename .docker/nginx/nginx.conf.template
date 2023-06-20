@@ -68,6 +68,14 @@ http {
 
         include /etc/nginx/default.d/*.conf;
 
+        location @proxy_to_python {
+            proxy_set_header X-Forwarded-For ${DOLLAR}proxy_add_x_forwarded_for;
+            proxy_set_header Host ${DOLLAR}http_host;
+            proxy_set_header X-Real-IP ${DOLLAR}remote_addr;
+            proxy_redirect off;
+            proxy_pass http://python_server;
+        }
+
         location /static/ {
             alias /opt/apps/static/;
         }
@@ -78,16 +86,12 @@ http {
                break;
         }
 
-        location / {
-          try_files ${DOLLAR}uri @proxy_to_python;
+        location /phpmyadmin/ {
+            proxy_pass    http://phpmyadmin:${PMA_APACHE_PORT}/;
         }
 
-        location @proxy_to_python {
-            proxy_set_header X-Forwarded-For ${DOLLAR}proxy_add_x_forwarded_for;
-            proxy_set_header Host ${DOLLAR}http_host;
-            proxy_set_header X-Real-IP ${DOLLAR}remote_addr;
-            proxy_redirect off;
-            proxy_pass http://python_server;
+        location / {
+          try_files ${DOLLAR}uri @proxy_to_python;
         }
 
         error_page 404 /404.html;
