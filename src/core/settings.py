@@ -1,6 +1,7 @@
 import os
 from datetime import timedelta
 from pathlib import Path
+from urllib.parse import quote_plus
 
 from pydantic import BaseSettings
 
@@ -10,9 +11,12 @@ from core.helper.env_helper import load_env
 load_env(env_file='../.env')
 
 
+SQLALCHEMY_DATABASE_URL = 'mysql+mysqlconnector://{user}:{password}@{host}:{port}/{db_name}'
+
+
 class __Settings(BaseSettings):
     base_dir: Path = Path(__file__).resolve().parent.parent
-    password_salt = os.getenv('PASSWORD_SALT') or '_password_salt'
+    password_salt = os.getenv('PASSWORD_SALT') or ''
 
     # jwt settings
     secret_key: str = os.getenv('SECRET_KEY') or 'not_secret'
@@ -30,7 +34,13 @@ class __Settings(BaseSettings):
 
     # Databse config
     sqlalchemy_database_url: str = (os.getenv('SQLALCHEMY_DATABASE_URL')
-                                    or 'sqlite:///../db.sqlite3')
+                                    or SQLALCHEMY_DATABASE_URL.format(
+                                        user=quote_plus(os.getenv('MYSQL_USER')),
+                                        password=quote_plus(os.getenv('MYSQL_PASSWORD')),
+                                        host=quote_plus(os.getenv('MYSQL_HOST')),
+                                        port=quote_plus(os.getenv('MYSQL_PORT')),
+                                        db_name=quote_plus(os.getenv('MYSQL_DATABASE')),
+    ))
     migrations_folder: str = os.getenv('MIGRATIONS_FOLDER') or 'sqlite'
 
     # Role configuration
