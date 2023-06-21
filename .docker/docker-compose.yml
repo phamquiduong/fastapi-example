@@ -1,5 +1,6 @@
 version: "3.8"
 services:
+  # Nginx server
   nginx:
     container_name: ${COMPOSE_PROJECT_NAME}_nginx
     build:
@@ -17,8 +18,10 @@ services:
       - ./.env
     depends_on:
       - pyserver
+    tty: true
     restart: always
 
+  # FastAPI server
   pyserver:
     container_name: ${COMPOSE_PROJECT_NAME}_pyserver
     build:
@@ -28,12 +31,29 @@ services:
       - ${PYSERVER_PORT}
     volumes:
       - ..:/code
-    env_file:
-      - ./.env
     depends_on:
       - mysql
     command: bash -c "cd src && python main.py migrate && uvicorn main:app --host 0.0.0.0 --port ${PYSERVER_PORT} --reload"
     tty: true
+    restart: always
+
+  # PHP My Admin and MySQL server
+  phpmyadmin:
+    container_name: ${COMPOSE_PROJECT_NAME}_phpmyadmin
+    image: phpmyadmin
+    expose:
+      - ${PMA_HTTP_PORT}
+    environment:
+      - PMA_HOST=${MYSQL_HOST}
+      - PMA_PORT=${MYSQL_PORT}
+
+      # Auto login to MySQL
+      - PMA_USER=${MYSQL_USER}
+      - PMA_PASSWORD=${MYSQL_PASSWORD}
+
+      - APACHE_PORT=${PMA_APACHE_PORT}
+    depends_on:
+      - mysql
     restart: always
 
   mysql:
@@ -44,8 +64,12 @@ services:
       - ${MYSQL_PORT}:3306
     volumes:
       - ./mysql:/var/lib/mysql
-    env_file:
-      - ./.env
+    environment:
+      - MYSQL_PORT=${MYSQL_PORT}
+      - MYSQL_RANDOM_ROOT_PASSWORD=${MYSQL_RANDOM_ROOT_PASSWORD}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
     restart: always
 
 networks:
