@@ -8,7 +8,7 @@ from pydantic import BaseSettings
 from core.helper.env_helper import load_env
 
 # Load enviroment variables
-load_env(env_file='../.env')
+load_env(env_file='.env')
 
 
 SQLALCHEMY_DATABASE_URL = 'mysql+mysqlconnector://{user}:{password}@{host}:{port}/{db_name}'
@@ -26,7 +26,7 @@ class __Settings(BaseSettings):
     refresh_token_exp: timedelta = timedelta(days=60)
 
     # Logging settings
-    log_dir: Path = base_dir / '../.log'
+    log_dir: Path = base_dir / '../log'
     log_level: str = os.getenv('LOG_LEVEL') or 'DEBUG'
     log_format: str = '[%(asctime)s] %(levelname)s [%(pathname)s:%(lineno)s] %(message)s'
     log_time_format: str = '%y-%m-%d %h:%m:%s'

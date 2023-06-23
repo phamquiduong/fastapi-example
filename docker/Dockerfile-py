@@ -3,8 +3,7 @@ ENV PYTHONUNBUFFERED 1
 
 
 # Create code source code folder
-RUN mkdir /code
-WORKDIR /code
+RUN mkdir /src
 
 
 # Upgrade pip
@@ -12,5 +11,5 @@ RUN pip install --no-cache-dir --upgrade pip
 
 
 # Install python packet
-COPY requirements.txt /code
+COPY requirements.txt /
 RUN pip install -r requirements.txt
