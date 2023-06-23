@@ -18,7 +18,6 @@ services:
       - ./.env
     depends_on:
       - pyserver
-    tty: true
     restart: always
 
   # FastAPI server
@@ -26,15 +25,15 @@ services:
     container_name: ${COMPOSE_PROJECT_NAME}_pyserver
     build:
       context: ../
-      dockerfile: .docker/Dockerfile-py
+      dockerfile: docker/Dockerfile-py
     expose:
       - ${PYSERVER_PORT}
     volumes:
-      - ..:/code
+      - ../src:/src
+      - ../log:/log
     depends_on:
       - mysql
     command: bash -c "cd src && python main.py migrate && uvicorn main:app --host 0.0.0.0 --port ${PYSERVER_PORT} --reload"
-    tty: true
     restart: always
 
   # PHP My Admin and MySQL server
@@ -42,7 +41,7 @@ services:
     container_name: ${COMPOSE_PROJECT_NAME}_phpmyadmin
     image: phpmyadmin
     expose:
-      - ${PMA_HTTP_PORT}
+      - ${PMA_APACHE_PORT}
     environment:
       - PMA_HOST=${MYSQL_HOST}
       - PMA_PORT=${MYSQL_PORT}
