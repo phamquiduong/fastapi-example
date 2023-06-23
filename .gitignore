@@ -56,7 +56,7 @@ cover/
 *.pot
 
 # Django stuff:
-*.log
+log/
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
@@ -160,10 +160,10 @@ cython_debug/
 #.idea/
 
 # Docker files
-.docker/mysql/
-.docker/nginx/config/nginx.conf
-.docker/nginx/logs
-.docker/.env
+docker/mysql/
+docker/nginx/config/nginx.conf
+docker/nginx/logs
+docker/.env
 
 # Sonarqube workspace
 .scannerwork
