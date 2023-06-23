@@ -151,43 +151,32 @@ fastapi-base
 │  └─ 📄docker-compose.yml
 ├─ 📁log
 ├─ 📁src
-│  ├─ 📁__pycache__
 │  ├─ 📁auth
 │  │  ├─ 📁crud
-│  │  │  ├─ 📁__pycache__
 │  │  │  ├─ 📄role_crud.py
 │  │  │  └─ 📄user_crud.py
 │  │  ├─ 📁dependencies
-│  │  │  ├─ 📁__pycache__
 │  │  │  └─ 📄auth_depend.py
 │  │  ├─ 📁helper
-│  │  │  ├─ 📁__pycache__
 │  │  │  ├─ 📄auth_helper.py
 │  │  │  └─ 📄password_helper.py
 │  │  ├─ 📁models
-│  │  │  ├─ 📁__pycache__
 │  │  │  └─ 📄user_role_model.py
 │  │  ├─ 📁routes
-│  │  │  ├─ 📁__pycache__
 │  │  │  ├─ 📄__init__.py
 │  │  │  ├─ 📄admin_router.py
 │  │  │  ├─ 📄auth_router.py
 │  │  │  └─ 📄user_router.py
 │  │  └─ 📁schemas
-│  │     ├─ 📁__pycache__
 │  │     ├─ 📄role_schema.py
 │  │     ├─ 📄token_schema.py
 │  │     └─ 📄user_schema.py
 │  ├─ 📁core
-│  │  ├─ 📁__pycache__
 │  │  ├─ 📁constants
-│  │  │  ├─ 📁__pycache__
 │  │  │  └─ 📄token_constant.py
 │  │  ├─ 📁dependencies
-│  │  │  ├─ 📁__pycache__
 │  │  │  └─ 📄db_depend.py
 │  │  ├─ 📁helper
-│  │  │  ├─ 📁__pycache__
 │  │  │  ├─ 📄bcrypt_helper.py
 │  │  │  ├─ 📄database_helper.py
 │  │  │  ├─ 📄env_helper.py
@@ -196,11 +185,9 @@ fastapi-base
 │  │  │  ├─ 📄phone_number_helper.py
 │  │  │  └─ 📄token_helper.py
 │  │  ├─ 📁schemas
-│  │  │  ├─ 📁__pycache__
 │  │  │  └─ 📄error_schema.py
 │  │  └─ 📄settings.py
 │  ├─ 📁database
-│  │  ├─ 📁__pycache__
 │  │  ├─ 📁migrations
 │  │  │  ├─ 📁mysql
 │  │  │  │  └─ 📄0001_create_user_role.sql
