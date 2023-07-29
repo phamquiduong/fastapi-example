@@ -1,58 +1,54 @@
-import sys
-
-from fastapi import FastAPI, status
-from fastapi.encoders import jsonable_encoder
-from fastapi.exceptions import RequestValidationError
+from fastapi import FastAPI
+from fastapi.exceptions import HTTPException, RequestValidationError
 from fastapi.responses import JSONResponse
 
-from auth.routes import admin_route, auth_route, user_route
-from auth.routes.auth_router import auth_route
-from core.schemas.error_schema import (FieldErrorSchema, HTTPExceptionSchema,
-                                       RequestValidationErrorSchema)
-from database.create_admin_user import create_admin_user
-from database.migrate import Migration
+from auth.routes import auth_route, user_route, users_route
+from core.error import ErrorCode, FastAPIException
+from core.helper.database_helper import db_helper
+from core.schemas.error_schema import ErrorField, ErrorSchema
 
-# Create FastAPI application
 app = FastAPI()
 
 
-# Include routes
+# Database configuration
+db_helper.try_connect()
+db_helper.create_all()
+
+
+# Incluse routers
 app.include_router(auth_route)
 app.include_router(user_route)
-app.include_router(admin_route)
+app.include_router(users_route)
 
 
-# Custom error handler
-@app.exception_handler(500)
-async def internal_exception_handler(_, error: Exception):
-    return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                        content=jsonable_encoder(HTTPExceptionSchema(detail=str(error)).__dict__))
+# App custom error handlers
+@app.exception_handler(FastAPIException)
+async def fastapi_exception_handler(_, exc: FastAPIException):
+    error, status_code = exc.error_code.get_response()
+    error.error_detail = exc.detail
+    return JSONResponse(status_code=status_code, content=error.model_dump(exclude_none=True))
 
 
 @app.exception_handler(RequestValidationError)
-async def custom_form_validation_error(request, exc):
-    request_validation_error = RequestValidationErrorSchema()
-
+async def request_validation_error_handler(_, exc: RequestValidationError):
+    error, status_code = ErrorCode.ERR_422.get_response()
+    error.error_fields = []
     for pydantic_error in exc.errors():
         loc, msg = pydantic_error["loc"], pydantic_error["msg"]
         loc = loc[1:] if loc[0] in ("body", "query", "path") and len(loc) > 1 else loc
         for field in loc:
-            request_validation_error.fields.append(FieldErrorSchema(name=field, detail=msg))
-
-    return JSONResponse(
-        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-        content=jsonable_encoder(request_validation_error.__dict__)
-    )
+            error.error_fields.append(ErrorField(field=field, detail=msg))
+    return JSONResponse(status_code=status_code, content=error.model_dump(exclude_none=True))
 
 
-args = iter(sys.argv[1:])
-action = next(args, None)
+@app.exception_handler(Exception)
+async def exception_handler(_, exc: Exception):
+    error, status_code = ErrorCode.ERR_500.get_response()
+    error.error_detail = str(exc).replace('\n', ' ')
+    return JSONResponse(status_code=status_code, content=error.model_dump(exclude_none=True))
 
 
-# Migrate function
-if action in ('migrate', '-m'):
-    Migration().run()
-
-# Create admin user
-if action == 'createsuperuser':
-    create_admin_user()
+@app.exception_handler(HTTPException)
+async def http_exception_handler(_, exc: HTTPException):
+    error = ErrorSchema(error_code=f'ERR_{exc.status_code}', error_message=exc.detail)
+    return JSONResponse(status_code=exc.status_code, content=error.model_dump(exclude_none=True))

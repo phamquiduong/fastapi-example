@@ -1,9 +1,8 @@
-from core.helper.database_helper import database_helper
+from core.helper.database_helper import db_helper
 
 
 def get_session():
-    Session = database_helper.get_session()
-    session = Session()
+    session = db_helper.get_session()()
     try:
         yield session
     finally:

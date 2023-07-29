@@ -1,102 +1,66 @@
-from pydantic import BaseModel, EmailStr, validator
+from pydantic import BaseModel, ConfigDict, EmailStr, validator
 
-from auth.schemas.role_schema import RoleOutSchema
-from core.helper.phone_number_helper import PhoneNumberHelper
+from core.validator.phone_number_validator import phone_number_validator
 
 
 class UserBaseSchema(BaseModel):
     email: EmailStr
 
     # Optional fields
-    address: str | None
-    full_name: str | None
-    phone_number: str | None
+    address: str | None = None
+    full_name: str | None = None
+    phone_number: str | None = None
 
     @validator('phone_number')
-    def phone_number_validator(cls, phone_number):
-        return PhoneNumberHelper(phone_number).validator() if phone_number is not None else None
+    @classmethod
+    def user_phone_number_validator(cls, phone_number):
+        return phone_number_validator(phone_number) if phone_number else None
 
-    class Config:
-        schema_extra = {
-            "example": {
-                "email": "fast_api_base@mail.com",
-                "address": "Da Nang, Viet Nam",
-                "full_name": "Fast API Base Source",
-                "phone_number": "+84 123 456 789"
-            },
-        }
+    model_config = ConfigDict(json_schema_extra={
+        "example": {
+            "email": "user@example.com",
+            "address": "Da Nang, Viet Nam",
+            "full_name": "FastAPI New User",
+            "phone_number": "+84 123 456 789"}})
+
+
+class UserSchema(UserBaseSchema):
+    model_config = ConfigDict(from_attributes=True)
+
+    hashed_password: str
 
 
 class UserInSchema(UserBaseSchema):
     password: str
 
-    class Config:
-        schema_extra = {
-            "example": {
-                "email": "fast_api_base@mail.com",
-                "password": "Hello123!@#",
-                "address": "Da Nang, Viet Nam",
-                "full_name": "Fast API Base Source",
-                "phone_number": "+84 123 456 789"
-            },
-        }
+    model_config = ConfigDict(json_schema_extra={
+        "example": {
+            "email": "user@example.com",
+            "password": "FastAPIStrongPassword!@#123",
+            "address": "Da Nang, Viet Nam",
+            "full_name": "FastAPI New User",
+            "phone_number": "+84 123 456 789"}})
 
 
 class UserOutSchema(UserBaseSchema):
     id: int
     is_active: bool
 
-    class Config:
-        schema_extra = {
-            "example": {
-                "id": 1,
-                "email": "fast_api_base@mail.com",
-                "is_active": True,
-                "address": "Da Nang, Viet Nam",
-                "full_name": "Fast API Base Source",
-                "phone_number": "+84 123 456 789",
-            },
-        }
-
-
-class UserUpdateSchema(UserBaseSchema):
-    email: EmailStr | None
-    is_active: bool | None
-
-    class Config:
-        schema_extra = {
-            "example": {
-                "email": "fast_api_base@mail.com",
-                "is_active": True,
-                "address": "Da Nang, Viet Nam",
-                "full_name": "Fast API Base Source",
-                "phone_number": "+84 123 456 789",
-            },
-        }
-
-
-class UserSchema(UserBaseSchema):
-    id: int | None
-    is_active: bool = True
-    hashed_password: str
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(json_schema_extra={
+        "example": {
+            "id": 1,
+            "is_active": True,
+            "email": "user@example.com",
+            "address": "Da Nang, Viet Nam",
+            "full_name": "FastAPI New User",
+            "phone_number": "+84 123 456 789"}})
 
 
 class UserLoginSchema(BaseModel):
     email: EmailStr
     password: str
 
-    class Config:
-        schema_extra = {
-            "example": {
-                "email": "fast_api_base@mail.com",
-                "password": "Hello123!@#"
-            },
-        }
-
-
-class UserRoleOutSchema(BaseModel):
-    user: UserOutSchema
-    roles: list[RoleOutSchema]
+    model_config = ConfigDict(json_schema_extra={
+        "example": {
+            "email": "user@example.com",
+            "password": "FastAPIStrongPassword!@#123"}})

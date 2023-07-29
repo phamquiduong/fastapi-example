@@ -1,26 +1,17 @@
 import os
 from datetime import timedelta
 from pathlib import Path
-from urllib.parse import quote_plus
 
-from pydantic import BaseSettings
-
-from core.helper.env_helper import load_env
-
-# Load enviroment variables
-load_env(env_file='.env')
+from pydantic import BaseModel
 
 
-SQLALCHEMY_DATABASE_URL = 'mysql+mysqlconnector://{user}:{password}@{host}:{port}/{db_name}'
-
-
-class __Settings(BaseSettings):
+class Settings(BaseModel):
     base_dir: Path = Path(__file__).resolve().parent.parent
-    password_salt = os.getenv('PASSWORD_SALT') or ''
+    password_salt: str = os.getenv('PASSWORD_SALT', '')
 
     # jwt settings
-    secret_key: str = os.getenv('SECRET_KEY') or 'not_secret'
-    algorithm: str = os.getenv('ALGORITHM') or 'HS256'
+    secret_key: str = os.getenv('SECRET_KEY', '')
+    algorithm: str = os.getenv('ALGORITHM', '')
 
     access_token_exp: timedelta = timedelta(minutes=15)
     refresh_token_exp: timedelta = timedelta(days=60)
@@ -33,18 +24,10 @@ class __Settings(BaseSettings):
     log_handlers: list[str] = os.getenv('LOG_HANDLER', '').split(',') or ['console']
 
     # Databse config
-    sqlalchemy_database_url: str = (os.getenv('SQLALCHEMY_DATABASE_URL')
-                                    or SQLALCHEMY_DATABASE_URL.format(
-                                        user=quote_plus(os.getenv('MYSQL_USER')),
-                                        password=quote_plus(os.getenv('MYSQL_PASSWORD')),
-                                        host=quote_plus(os.getenv('MYSQL_HOST')),
-                                        port=quote_plus(os.getenv('MYSQL_PORT')),
-                                        db_name=quote_plus(os.getenv('MYSQL_DATABASE')),
-    ))
-    migrations_folder: str = os.getenv('MIGRATIONS_FOLDER') or 'sqlite'
+    sqlalchemy_database_url: str = 'sqlite:///../database/db.sqlite3'
 
-    # Role configuration
-    default_role = 'user'
+    # Pagination settings
+    limit: int = 10
 
 
-settings = __Settings()
+settings = Settings()

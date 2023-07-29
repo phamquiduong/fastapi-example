@@ -40,7 +40,7 @@ http {
     index   index.html index.htm;
 
     upstream python_server {
-        server pyserver:${PYSERVER_PORT} fail_timeout=0;
+        server fastapi:${FASTAPI_PORT} fail_timeout=0;
     }
 
     server {
@@ -84,10 +84,6 @@ http {
                empty_gif;
                access_log off;
                break;
-        }
-
-        location /phpmyadmin/ {
-            proxy_pass    http://phpmyadmin:${PMA_APACHE_PORT}/;
         }
 
         location / {

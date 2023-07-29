@@ -1,94 +1,69 @@
-from typing import Annotated
-
-from fastapi import APIRouter, Body, Depends, HTTPException, status
+from fastapi import APIRouter, Body, Depends, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
-from auth.crud.user_crud import create_user, get_user
-from auth.helper.auth_helper import authenticate_user
+from auth.helper.auth_helper import AuthHelper
+from auth.helper.token_helper import AccessTokenHelper, RefreshTokenHelper
+from auth.helper.user_helper import UserHelper
 from auth.schemas.token_schema import (AuthTokenSchema,
                                        OAuth2PasswordBearerTokenSchema)
 from auth.schemas.user_schema import (UserInSchema, UserLoginSchema,
                                       UserOutSchema)
-from core.constants.token_constant import TOKEN_EXAMPLE
 from core.dependencies.db_depend import get_session
-from core.helper.token_helper import access_token_helper, refresh_token_helper
-from core.schemas.error_schema import (HTTPExceptionSchema,
-                                       RequestValidationErrorSchema)
+from core.schemas.error_schema import ErrorSchema, FieldErrorSchema
 
 auth_route = APIRouter(tags=['Authentication'])
 
 
 @auth_route.post('/token', include_in_schema=False,
-                 response_model=OAuth2PasswordBearerTokenSchema,
-                 responses={
-                     200: {'model': OAuth2PasswordBearerTokenSchema},
-                     401: {'model': HTTPExceptionSchema},
-                     422: {'model': RequestValidationErrorSchema},
-                     500: {'model': HTTPExceptionSchema},
-                 })
+                 response_model=OAuth2PasswordBearerTokenSchema)
 def oauth2_token(
-    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    form: OAuth2PasswordRequestForm = Depends(),
     session: Session = Depends(get_session)
 ):
-    email = form_data.username
-    password = form_data.password
-
-    user = authenticate_user(session, email=email, password=password)
-
-    return {'access_token': access_token_helper.render_token(user)}
+    user = AuthHelper(session).by_email_password(email=form.username, password=form.password)
+    return {'access_token': AccessTokenHelper().render_token(user)}
 
 
 @auth_route.post('/register',
                  status_code=status.HTTP_201_CREATED,
                  response_model=UserOutSchema,
                  responses={
-                     201: {'model': UserOutSchema},
-                     409: {'model': HTTPExceptionSchema},
-                     422: {'model': RequestValidationErrorSchema},
-                     500: {'model': HTTPExceptionSchema},
-                 })
+                     422: {'model': FieldErrorSchema},
+                     500: {'model': ErrorSchema}})
 def user_register(
-    user_create: Annotated[UserInSchema, Body(...)],
+    user_in: UserInSchema = Body(...),
     session: Session = Depends(get_session)
 ):
-    return create_user(session, user_create).__dict__
+    user_db = UserHelper(session).create_user(user_in)
+    return UserOutSchema(**user_db.__dict__)
 
 
 @auth_route.post('/login', response_model=AuthTokenSchema,
                  responses={
-                     200: {'model': AuthTokenSchema},
-                     401: {'model': HTTPExceptionSchema},
-                     422: {'model': RequestValidationErrorSchema},
-                     500: {'model': HTTPExceptionSchema},
-                 })
+                     422: {'model': FieldErrorSchema},
+                     500: {'model': ErrorSchema}})
 def user_login(
-    user: UserLoginSchema = Body(...),
+    user_login_form: UserLoginSchema = Body(...),
     session: Session = Depends(get_session)
 ):
-    user = authenticate_user(session, email=user.email, password=user.password)
-
-    return {
-        'access_token': {'token': access_token_helper.render_token(user)},
-        'refresh_token': {'token': refresh_token_helper.render_token(user)}
-    }
+    user = AuthHelper(session).by_email_password(email=user_login_form.email, password=user_login_form.password)
+    return AuthTokenSchema(
+        access_token=AccessTokenHelper().fetch_token_response(user=user),
+        refresh_token=RefreshTokenHelper().fetch_token_response(user=user)
+    )
 
 
 @auth_route.post('/refresh', response_model=AuthTokenSchema,
                  responses={
-                     401: {'model': HTTPExceptionSchema},
-                     404: {'model': HTTPExceptionSchema},
-                     422: {'model': RequestValidationErrorSchema},
-                     500: {'model': HTTPExceptionSchema},
-                 })
+                     422: {'model': FieldErrorSchema},
+                     500: {'model': ErrorSchema}})
 def user_refresh_token(
-    refresh_token: Annotated[str, Body(..., example=TOKEN_EXAMPLE)],
+    refresh_token: str = Body(..., embed=True),
     session: Session = Depends(get_session)
 ):
-    user_id = refresh_token_helper.auth_token(token=refresh_token)
-    user = get_user(session, user_id=user_id)
-
-    return {
-        'access_token': {'token': access_token_helper.render_token(user)},
-        'refresh_token': {'token': refresh_token_helper.render_token(user)}
-    }
+    user = AuthHelper(session).by_token(token=refresh_token, helper=RefreshTokenHelper())
+    return AuthTokenSchema(
+        access_token=AccessTokenHelper().fetch_token_response(user=user),
+        refresh_token=RefreshTokenHelper().fetch_token_response(user=user)
+    )
