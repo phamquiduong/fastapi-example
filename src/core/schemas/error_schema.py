@@ -1,45 +1,35 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
-class HTTPExceptionSchema(BaseModel):
+class ErrorField(BaseModel):
+    field: str
     detail: str
 
-    class Config:
-        schema_extra = {
-            "example": {"detail": "I'm sorry.. It is an error.."},
-        }
+    model_config = ConfigDict(json_schema_extra={
+        "example": {
+            "field": "email",
+            "detail": "value is not a valid email address: There must be something after the @-sign."}})
 
 
-class FieldErrorSchema(BaseModel):
-    name: str
-    detail: str
+class ErrorSchema(BaseModel):
+    error_code: str
+    error_message: str
+    error_detail: str | None = None
 
-    class Config:
-        schema_extra = {
-            "example": {
-                "name": "field1",
-                "detail": "value is not a valid email address"
-            },
-        }
+    error_fields: list[ErrorField] | None = None
+
+    model_config = ConfigDict(json_schema_extra={
+        "example": {
+            "error_code": "ERR_500",
+            "error_message": "Internal server error",
+            "error_detail": "Division by zero"}})
 
 
-class RequestValidationErrorSchema(BaseModel):
-    detail: str = 'Request validation error'
-    fields: list[FieldErrorSchema] = []
-
-    class Config:
-        schema_extra = {
-            "example": {
-                "detail": "Request validation error",
-                "fields": [
-                    {
-                        "name": "field1",
-                        "detail": "value is not a valid email address"
-                    },
-                    {
-                        "name": "field2",
-                        "detail": "field required"
-                    }
-                ]
-            },
-        }
+class FieldErrorSchema(ErrorSchema):
+    model_config = ConfigDict(json_schema_extra={
+        "example": {
+            "error_code": "ERR_422",
+            "error_message": "Request validation error",
+            "error_fields": [{
+                "field": "email",
+                "detail": "value is not a valid email address: There must be something after the @-sign."}]}})

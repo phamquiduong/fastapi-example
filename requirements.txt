@@ -1,19 +1,16 @@
-fastapi
+# Server
 uvicorn[standard]
 
-# Dot environments
-python-dotenv
+# FastAPI
+fastapi
+python-multipart
 
 # SQL support
-mysql-connector-python
 sqlalchemy
 
 # Email Validation
 pydantic[email]
 
 # Password support
-passlib[bcrypt]
 pyjwt
-
-# Form support
-python-multipart
+passlib[bcrypt]

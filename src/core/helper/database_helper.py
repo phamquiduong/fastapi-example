@@ -1,46 +1,48 @@
 import time
 
-from sqlalchemy import create_engine, exc, text
+from sqlalchemy import create_engine, text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
+from core.error import ErrorCode, FastAPIException
 from core.helper.log_helper import logger
 from core.settings import settings
 
 
-class __DatabaseHelper:
-    def __init__(self, sqlalchemy_database_url: str) -> None:
-        self.sqlalchemy_database_url = sqlalchemy_database_url
+class DatabaseHelper:
+    def __init__(self):
+        self.__engine = create_engine(settings.sqlalchemy_database_url)
+        self.__base = declarative_base()
+        self.__session = sessionmaker(autocommit=False, autoflush=False, bind=self.__engine)
 
-        self.__engine = create_engine(sqlalchemy_database_url)
-        self.__Session = sessionmaker(autocommit=False, autoflush=False, bind=self.__engine)
+    def get_session(self):
+        return self.__session
 
-        self.__Base = declarative_base()
+    def get_base(self):
+        return self.__base
 
-    def is_connect(self) -> bool:
+    def create_all(self):
+        self.__base.metadata.create_all(bind=self.__engine)
+
+    def is_connected(self) -> bool:
         try:
             self.exec_query('SELECT 1')
             return True
-        except exc.SQLAlchemyError as error:
-            logger.error(str(error))
+        except FastAPIException as error:
+            logger.error(error.detail)
             return False
 
     def try_connect(self) -> None:
-        while not self.is_connect():
-            logger.error('Connect database fail. Try in next 5s.....')
-            time.sleep(5)
-
-    def get_session(self):
-        return self.__Session
-
-    def get_base(self):
-        return self.__Base
+        while not self.is_connected():
+            logger.error('Connect database fail. Try in next 10s.....')
+            time.sleep(10)
 
     def exec_query(self, query: str):
-        with self.__Session() as session:
-            session.execute(text(query))
+        try:
+            with self.__session() as session:
+                return session.execute(text(query))
+        except Exception as error:
+            raise FastAPIException(ErrorCode.DB_5001, detail=str(error)) from error
 
 
-database_helper = __DatabaseHelper(
-    sqlalchemy_database_url=settings.sqlalchemy_database_url
-)
+db_helper = DatabaseHelper()
