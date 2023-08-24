@@ -11,6 +11,10 @@ from core.settings import settings
 
 class DatabaseHelper:
     def __init__(self):
+        # Create the database folder
+        if settings.database_dir is not None:
+            settings.database_dir.mkdir(parents=True, exist_ok=True)
+
         self.__engine = create_engine(settings.sqlalchemy_database_url)
         self.__base = declarative_base()
         self.__session = sessionmaker(autocommit=False, autoflush=False, bind=self.__engine)

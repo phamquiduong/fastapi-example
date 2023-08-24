@@ -28,11 +28,10 @@ services:
       - ${FASTAPI_PORT}
     volumes:
       - ../src:/src
-      - ../docker/fastapi/log:/log
-      - ../docker/database:/database
-    env_file:
-      - ./.env
-    command: bash -c "cd src && uvicorn main:app --host 0.0.0.0 --port ${FASTAPI_PORT} --reload"
+      - ../docker/fastapi/log:/docker/fastapi/log
+      - ../docker/database:/docker/database
+      - ../docker/.env:/docker/.env
+    command: bash -c "cd src && uvicorn main:app --host 0.0.0.0 --port ${FASTAPI_PORT} --env-file ../docker/.env --reload"
     restart: always
 networks:
   default:
