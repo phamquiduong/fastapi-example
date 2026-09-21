@@ -4,5 +4,15 @@ FastAPI
 # ASGI
 uvicorn
 
-# PostgreSQL connection
+# Database
 psycopg[binary]
+sqlmodel
+
+# Validator
+email-validator
+
+# Security
+pwdlib[argon2]
+
+# Authentication
+pyjwt
