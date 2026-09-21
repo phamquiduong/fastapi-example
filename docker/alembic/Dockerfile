@@ -6,14 +6,14 @@ ENV PYTHONUNBUFFERED=1
 
 
 # Install Python package
-COPY requirements.txt /
+COPY migrations/requirements.txt /
 RUN pip install --no-cache-dir --only-binary=:all: -r requirements.txt
 
 
 # Create src folder
-WORKDIR /src
-COPY /src /src
+WORKDIR /migrations
+COPY /migrations /migrations
 
 
 # Run server
-CMD uvicorn main:app --host 0.0.0.0 --port 8000
+CMD alembic upgrade head

@@ -1,0 +1,5 @@
+# Migrations
+alembic
+
+# PostgreSQL connection
+psycopg[binary]
