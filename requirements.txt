@@ -1,0 +1,8 @@
+# Server
+FastAPI
+
+# ASGI
+uvicorn
+
+# PostgreSQL connection
+psycopg[binary]
