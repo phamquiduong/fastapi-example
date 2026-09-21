@@ -17,6 +17,7 @@ services:
     restart: always
 
   alembic:
+    profiles: [migrations]
     build:
       context: ..
       dockerfile: docker/alembic/Dockerfile
@@ -26,7 +27,6 @@ services:
       - DB_USER=${POSTGRES_USER}
       - DB_PASS=${POSTGRES_PASS}
       - DB_NAME=${POSTGRES_NAME}
-    # command: tail -f /dev/null
 
   postgresql:
     image: postgres:latest
